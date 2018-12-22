@@ -7,14 +7,8 @@ lower_black = np.array([0,0,0])
 upper_black = np.array([180,255,40])
 while True:
     ret ,frame = cap.read()
-    #if not ret:
-        #cap = cv2.VideoCapture('Trimmed.mp4')
-
-        #continue
-    #frame = cv2.rotate(frame,0)
     if not ret:
         break
-    #print(frame.shape)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv, lower_black, upper_black)
     kernel = np.ones((5,5),np.int)
@@ -41,7 +35,6 @@ while True:
             continue
         
         cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3)
-        #cv2.putText(frame,str(count), (x,y), cv2.FONT_HERSHEY_SIMPLEX, 1, 255)
         out.write(frame)
     cv2.imshow('thresh',thrshed)
     cv2.imshow('res',res)
