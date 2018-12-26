@@ -1,13 +1,36 @@
 import serial               
-import time 
+import time
+import RPi.GPIO as GPIO
 import webbrowser           
 import sys                  
 import csv
 import picamera
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18,GPIO.IN,pull_up_dowm = GPIO.PUD_UP)
+
 
 with open('example1.csv', 'w+') as csv_file1:
     csv_writer = csv.writer(csv_file1)
     csv_writer.writerow(["Latitude", "Longitude","Timestamp"])
+
+
+use = False
+
+
+def picamerause(num):
+    camera = picamera.PiCamera()
+    camera.resolution = (640, 480)
+    if(use == False):
+        # camera.capture('image'+str(num)+'.jpg')
+        # time.sleep(1)
+        camera.start_recording('video' + str(num) + '.h264')
+        use = True
+        print("recording Started")
+    elif(use == True):
+        camera.stop_recording()
+        camera.close()
+        use=False
+        print('Recording Stopped')
 
 def GPS_Info():
     global NMEA_buff
@@ -46,10 +69,16 @@ NMEA_buff = 0
 lat_in_degrees = 0
 long_in_degrees = 0
 
-
+num=0
 while True:
+    input_state = GPIO.input(18)
     received_data = (str)(ser.readline())                   
-    GPGGA_data_available = received_data.find(gpgga_info)                   
+    GPGGA_data_available = received_data.find(gpgga_info)
+    num = num + 1
+    if input_state == False:
+        print('Button Pressed')
+        time.sleep(0.2)
+        picamerause(num)
     if (GPGGA_data_available>0):
         GPGGA_buffer = received_data.split("$GPGGA,",1)[1]  
         NMEA_buff = (GPGGA_buffer.split(','))               
