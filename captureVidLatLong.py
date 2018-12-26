@@ -1,10 +1,9 @@
 import serial               
 import time
 import RPi.GPIO as GPIO
-import webbrowser           
-import sys                  
 import csv
 import picamera
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18,GPIO.IN,pull_up_dowm = GPIO.PUD_UP)
 
@@ -32,7 +31,7 @@ def picamerause(num):
         camera.close()
         use=False
         print('Recording Stopped')
-        return 
+        return
 
 def GPS_Info():
     global NMEA_buff
@@ -70,7 +69,7 @@ GPGGA_buffer = 0
 NMEA_buff = 0
 lat_in_degrees = 0
 long_in_degrees = 0
-
+start_time = time.time()
 num=0
 while True:
     input_state = GPIO.input(18)
@@ -87,6 +86,8 @@ while True:
         GPS_Info()                                          
 
         print("lat in degrees:", lat_in_degrees," long in degree: ", long_in_degrees, '\n')
+        recent_time = time.time()
+        taken_time=recent_time-start_time
         with open('example1.csv', 'a') as csv_file1:
             csv_writer = csv.writer(csv_file1)
-            csv_writer.writerow([lat_in_degrees, long_in_degrees,time.time()])
+            csv_writer.writerow([lat_in_degrees, long_in_degrees,taken_time])
