@@ -26,11 +26,13 @@ def picamerause(num):
         camera.start_recording('video' + str(num) + '.h264')
         use = True
         print("recording Started")
+        return
     elif(use == True):
         camera.stop_recording()
         camera.close()
         use=False
         print('Recording Stopped')
+        return 
 
 def GPS_Info():
     global NMEA_buff
