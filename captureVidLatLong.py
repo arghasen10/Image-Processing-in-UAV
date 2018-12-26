@@ -5,6 +5,10 @@ import sys
 import csv
 import picamera
 
+with open('example1.csv', 'w+') as csv_file1:
+    csv_writer = csv.writer(csv_file1)
+    csv_writer.writerow(["Latitude", "Longitude","Timestamp"])
+
 def GPS_Info():
     global NMEA_buff
     global lat_in_degrees
@@ -52,4 +56,6 @@ while True:
         GPS_Info()                                          
 
         print("lat in degrees:", lat_in_degrees," long in degree: ", long_in_degrees, '\n')
-        
+        with open('example1.csv', 'a') as csv_file1:
+            csv_writer = csv.writer(csv_file1)
+            csv_writer.writerow([lat_in_degrees, long_in_degrees,time.time()])
