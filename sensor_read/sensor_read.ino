@@ -1,4 +1,4 @@
-//#include <SoftwareI2C.h>
+#include <SoftwareI2C.h>
 #include <TH02_dev.h>
 //#include <SPI.h>
 #include <MutichannelGasSensor.h>
@@ -14,8 +14,8 @@ int PM01Value=0;          //define PM1.0 value of the air detector module
 int PM2_5Value=0;         //define PM2.5 value of the air detector module
 int PM10Value=0;         //define PM10 value of the air detector module
 
-SoftwareSerial Serial0(10, 11); // RX, TX
-SoftwareSerial gpsSerial(12,13); //RX,TX
+//SoftwareSerial Serial0(12,13); // RX, TX
+SoftwareSerial gpsSerial(10,11); //RX,TX
 TinyGPSPlus gps;
 float lattitude,longitude;
 int sensorValue;
@@ -24,36 +24,58 @@ int digitalValue;
 #define TH02_EN     1
 const int pin_scl = 2;      // select a pin as SCL of software I2C
 const int pin_sda = 3;      // select a pin as SDA of software I2C
-
+int flag=0;
 void setup()
 {
+  Serial.begin(9600);
   setupGPS();
-  setupMQ135();
+  
   //Serial0.begin(9600); 
   setuphumi();
   setupmulti();
- setupdust();
+ //setupdust();
    
 }
- 
+
 void loop()
-{  readGPS();
- readdust();
-  readmultino2();
+{  
+ 
+ while(gpsSerial.available())
+  {
+    int data = gpsSerial.read();
+    if(gps.encode(data)) 
+  {
+ lattitude = {gps.location.lat()}; 
+  longitude = {gps.location.lng()}; 
+
+  flag = 1;
+ // Serial.print("lattitude:");
+  Serial.print(lattitude);
+  Serial.print(" , ");
+ // Serial.print("longitude:");
+  Serial.print(longitude);
+  Serial.print(" , ");
+}
+  }
+  if (flag ==1){
+    //readdust();
+    readmultino2();
   readMQ135();
   readmultico();
   readhumi();
-  delay(1000);
+  }
   
+  //delay(1000);
+  flag =0 ;
 }
 
 ////////////////////////////////////////////////
-void setupGPS()
+ void setupGPS()
 {
   gpsSerial.begin(9600);
 }
 ////////////////////////////////////////////////
-void readGPS()
+/*void readGPS()
 {
   while(gpsSerial.available())
   {
@@ -68,22 +90,18 @@ void readGPS()
   longitude = {gps.location.lng()}; 
 
   
-  //Serial.print("lattitude:");
-  //Serial.println(lattitude);
-  Serial.print(lattitude);
+ // Serial.print("lattitude:");
+  Serial.println(lattitude);
   Serial.print(" , ");
-  //Serial.print("longitude:");
-  //Serial.println(longitude);
-  Serial.print(longitude);
+ // Serial.print("longitude:");
+  Serial.println(longitude);
   Serial.print(" , ");
 }
-  } 
+  }
 }
+*/
 ////////////////////////////////////////////////
-void setupMQ135()
-{
-  Serial.begin(115200);
-}
+
 
 void readMQ135()
 {
@@ -146,7 +164,7 @@ void readhumi()
 }
 
 
-void setupdust()
+/*void setupdust()
 {
   Serial0.begin(9600);   
 //  Serial0.setTimeout(1500);    
@@ -166,6 +184,7 @@ void readdust()
       }           
     }
   }
+  
   static unsigned long OledTimer=millis();  
   //  if (millis() - OledTimer >=1000) 
     {
@@ -187,7 +206,8 @@ void readdust()
       Serial.print(" , ");
     }
   
-}
+}*/
+
 char checkValue(unsigned char *thebuf, char leng)
 {  
   char receiveflag=0;
