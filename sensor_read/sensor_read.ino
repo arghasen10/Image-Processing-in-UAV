@@ -6,6 +6,7 @@
 //#include "Wire.h"
 //#include <Arduino.h>
 #include <SoftwareSerial.h>
+#include <TinyGPS++.h>
 #define LENG 31   //0x42 + 31 bytes equal to 32 bytes
 unsigned char buf[LENG];
 
@@ -14,7 +15,9 @@ int PM2_5Value=0;         //define PM2.5 value of the air detector module
 int PM10Value=0;         //define PM10 value of the air detector module
 
 SoftwareSerial Serial0(10, 11); // RX, TX
-
+SoftwareSerial gpsSerial(12,13); //RX,TX
+TinyGPSPlus gps;
+float lattitude,longitude;
 int sensorValue;
 int digitalValue;
 #define GAS_EN      1
@@ -24,7 +27,7 @@ const int pin_sda = 3;      // select a pin as SDA of software I2C
 
 void setup()
 {
-  
+  setupGPS();
   setupMQ135();
   //Serial0.begin(9600); 
   setuphumi();
@@ -34,7 +37,7 @@ void setup()
 }
  
 void loop()
-{  
+{  readGPS();
  readdust();
   readmultino2();
   readMQ135();
@@ -44,6 +47,38 @@ void loop()
   
 }
 
+////////////////////////////////////////////////
+void setupGPS()
+{
+  gpsSerial.begin(9600);
+}
+////////////////////////////////////////////////
+void readGPS()
+{
+  while(gpsSerial.available())
+  {
+    int data = gpsSerial.read();
+    if(gps.encode(data))
+    
+  {
+  
+  
+ 
+ lattitude = {gps.location.lat()}; 
+  longitude = {gps.location.lng()}; 
+
+  
+  //Serial.print("lattitude:");
+  //Serial.println(lattitude);
+  Serial.print(lattitude);
+  Serial.print(" , ");
+  //Serial.print("longitude:");
+  //Serial.println(longitude);
+  Serial.print(longitude);
+  Serial.print(" , ");
+}
+  } 
+}
 ////////////////////////////////////////////////
 void setupMQ135()
 {
