@@ -28,18 +28,19 @@ int flag=0;
 void setup()
 {
   Serial.begin(9600);
+  
   setupGPS();
   
   //Serial0.begin(9600); 
   setuphumi();
   setupmulti();
- //setupdust();
+ setupdust();
    
 }
 
 void loop()
 {  
- 
+  //gpsSerial.begin(9600);
  while(gpsSerial.available())
   {
     int data = gpsSerial.read();
@@ -47,7 +48,8 @@ void loop()
   {
  lattitude = {gps.location.lat()}; 
   longitude = {gps.location.lng()}; 
-
+//gpsSerial.end();
+//Serial.begin(9600);
   flag = 1;
  // Serial.print("lattitude:");
   Serial.print(lattitude);
@@ -55,10 +57,12 @@ void loop()
  // Serial.print("longitude:");
   Serial.print(longitude);
   Serial.print(" , ");
+  Serial.end();
 }
   }
+  
   if (flag ==1){
-    //readdust();
+    readdust();
     readmultino2();
   readMQ135();
   readmultico();
@@ -67,6 +71,7 @@ void loop()
   
   //delay(1000);
   flag =0 ;
+  //Serial.println("Inside tge loop but GPS not working");
 }
 
 ////////////////////////////////////////////////
@@ -77,9 +82,11 @@ void loop()
 ////////////////////////////////////////////////
 /*void readGPS()
 {
+   gpsSerial.begin(9600);
   while(gpsSerial.available())
   {
     int data = gpsSerial.read();
+     gpsSerial.end();
     if(gps.encode(data))
     
   {
@@ -89,7 +96,7 @@ void loop()
  lattitude = {gps.location.lat()}; 
   longitude = {gps.location.lng()}; 
 
-  
+  Serial.begin(9600);
  // Serial.print("lattitude:");
   Serial.println(lattitude);
   Serial.print(" , ");
@@ -98,6 +105,7 @@ void loop()
   Serial.print(" , ");
 }
   }
+  Serial.end();
 }
 */
 ////////////////////////////////////////////////
@@ -105,12 +113,13 @@ void loop()
 
 void readMQ135()
 {
+  //Serial.begin(9600);
   sensorValue = analogRead(A1);       // read analog input pin 1
  // Serial.print("");
   Serial.print(sensorValue,DEC);
   Serial.print(" , ");
 //  Serial.println();
-
+//Serial.end();
 }
 //////////////////////////////////////////////////////////
 void setupmulti()
@@ -122,12 +131,13 @@ void setupmulti()
 
 void readmultino2()
 { 
+  //serial.begin(9600);
     float n;  
     n = gas.measure_NO2();    
     Serial.print(n);
     Serial.print(" , ");
 //    Serial.println();
-
+//Serial.end();
 }
 
 
@@ -164,17 +174,20 @@ void readhumi()
 }
 
 
-/*void setupdust()
+void setupdust()
 {
-  Serial0.begin(9600);   
+   
 //  Serial0.setTimeout(1500);    
  // Serial.begin(9600);
+ Serial1.begin(9600);
 }
 
 void readdust()
 {
-  if(Serial0.find("B")){    
-    Serial0.readBytes(buf,LENG);
+  //Serial0.begin(9600);  
+  
+  if(Serial1.find("B")){    
+    Serial1.readBytes(buf,LENG);
 
     if(buf[0] == 0x4d){
       if(checkValue(buf,LENG)){
@@ -184,7 +197,8 @@ void readdust()
       }           
     }
   }
-  
+  //Serial1.end();
+  Serial.begin(9600);
   static unsigned long OledTimer=millis();  
   //  if (millis() - OledTimer >=1000) 
     {
@@ -205,8 +219,9 @@ void readdust()
 //      Serial.println("  ug/m3");   
       Serial.print(" , ");
     }
-  
-}*/
+  //Serial0.end();
+  //Serial.end();
+}
 
 char checkValue(unsigned char *thebuf, char leng)
 {  
