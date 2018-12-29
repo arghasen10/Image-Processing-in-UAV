@@ -7,13 +7,14 @@
 //#include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <TinyGPS++.h>
+#include <SD.h>
 #define LENG 31   //0x42 + 31 bytes equal to 32 bytes
 unsigned char buf[LENG];
-
+const int chipSelect = 53;
 int PM01Value=0;          //define PM1.0 value of the air detector module
 int PM2_5Value=0;         //define PM2.5 value of the air detector module
 int PM10Value=0;         //define PM10 value of the air detector module
-
+String dataString = "";
 //SoftwareSerial Serial0(12,13); // RX, TX
 SoftwareSerial gpsSerial(10,11); //RX,TX
 TinyGPSPlus gps;
@@ -28,19 +29,22 @@ int flag=0;
 void setup()
 {
   Serial.begin(9600);
+  setupSD();
   
   setupGPS();
-  
+  pinMode(53, OUTPUT);
   //Serial0.begin(9600); 
   setuphumi();
   setupmulti();
  setupdust();
    
+  
 }
 
 void loop()
 {  
   //gpsSerial.begin(9600);
+  dataString = "";
  while(gpsSerial.available())
   {
     int data = gpsSerial.read();
@@ -54,10 +58,15 @@ void loop()
  // Serial.print("lattitude:");
   Serial.print(lattitude);
   Serial.print(" , ");
+  dataString += String(lattitude);
+    dataString += ","; 
+        
  // Serial.print("longitude:");
   Serial.print(longitude);
   Serial.print(" , ");
-  Serial.end();
+  dataString += String(longitude);
+    dataString += ","; 
+  
 }
   }
   
@@ -67,11 +76,38 @@ void loop()
   readMQ135();
   readmultico();
   readhumi();
+  writeSD();
   }
   
   //delay(1000);
   flag =0 ;
   //Serial.println("Inside tge loop but GPS not working");
+}
+
+////////////////////////////////////////////////
+void setupSD()
+{
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Card failed, or not present");
+    // don't do anything more:
+    return;
+  }
+  Serial.println("card initialized.");
+}
+void writeSD()
+{
+  File dataFile = SD.open("Test29.csv", FILE_WRITE);
+  if (dataFile) {
+    dataFile.println(dataString);
+    dataFile.close();
+    // print to the serial port too:
+    Serial.println(dataString);
+  }  
+  // if the file isn't open, pop up an error:
+  else {
+    Serial.println("error opening datalog.txt");
+  }
 }
 
 ////////////////////////////////////////////////
@@ -118,6 +154,8 @@ void readMQ135()
  // Serial.print("");
   Serial.print(sensorValue,DEC);
   Serial.print(" , ");
+  dataString += String(sensorValue);
+    dataString += ",";
 //  Serial.println();
 //Serial.end();
 }
@@ -136,6 +174,8 @@ void readmultino2()
     n = gas.measure_NO2();    
     Serial.print(n);
     Serial.print(" , ");
+    dataString += String(n);
+    dataString += ","; 
 //    Serial.println();
 //Serial.end();
 }
@@ -147,6 +187,8 @@ void readmultico()
     c = gas.measure_CO();
     Serial.print(c);
     Serial.print(" , ");
+    dataString += String(c);
+    dataString += ",";
 }
 //////////////////////////////////////////////////////////////
 
@@ -163,11 +205,12 @@ void readhumi()
     float humidity = TH02.ReadHumidity();
   Serial.print(humidity);
     Serial.print(" , ");
-    
+    dataString += String(humidity);
+    dataString += ",";
    float temper = TH02.ReadTemperature();   
    Serial.println(temper);
-
-        
+  dataString += String(temper);
+   
           
 
 //  Serial.println();
@@ -198,7 +241,7 @@ void readdust()
     }
   }
   //Serial1.end();
-  Serial.begin(9600);
+  //Serial.begin(9600);
   static unsigned long OledTimer=millis();  
   //  if (millis() - OledTimer >=1000) 
     {
@@ -207,17 +250,23 @@ void readdust()
 //      Serial.print("PM1.0: ");  
       Serial.print(PM01Value);
       Serial.print(" , ");
+      dataString += String(PM01Value);
+    dataString += ","; 
 //      Serial.println("  ug/m3");            
     
 //      Serial.print("PM2.5: ");  
       Serial.print(PM2_5Value);
       Serial.print(" , ");
+      dataString += String(PM2_5Value);
+    dataString += ","; 
 //      Serial.println("  ug/m3");     
       
 //      Serial.print("PM1 0: ");  
       Serial.print(PM10Value);
 //      Serial.println("  ug/m3");   
       Serial.print(" , ");
+      dataString += String(PM10Value);
+    dataString += ","; 
     }
   //Serial0.end();
   //Serial.end();
