@@ -6,6 +6,7 @@
 //#include "Wire.h"
 //#include <Arduino.h>
 #include <SoftwareSerial.h>
+#include "RTClib.h"
 #include <TinyGPS++.h>
 #include <SD.h>
 #define LENG 31   //0x42 + 31 bytes equal to 32 bytes
@@ -18,7 +19,10 @@ String dataString = "";
 //SoftwareSerial Serial0(12,13); // RX, TX
 SoftwareSerial gpsSerial(10,11); //RX,TX
 TinyGPSPlus gps;
-float lattitude,longitude;
+RTC_DS1307 rtc;
+char daysOfTheWeek[7][12] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+
+double lattitude,longitude;
 int sensorValue;
 int digitalValue;
 #define GAS_EN      1
@@ -26,19 +30,23 @@ int digitalValue;
 const int pin_scl = 2;      // select a pin as SCL of software I2C
 const int pin_sda = 3;      // select a pin as SDA of software I2C
 int flag=0;
+int filenum =0;
+int writeflag =0;
+String filename = "A";
+//Latitude,Longitude,Time,Date,PM1,PM2_5,PM10,N02,CO2,CO,Humidity,Temperature
+String lati,lon,tim,dat,pm1val,pm2_5val,pm10_val,no2_val,co2_val,co_val,humid_val,temper_val;
 void setup()
 {
   Serial.begin(9600);
   setupSD();
-  
+  setupRTC();
   setupGPS();
   pinMode(53, OUTPUT);
   //Serial0.begin(9600); 
   setuphumi();
   setupmulti();
  setupdust();
-   
-  
+   readRTC();
 }
 
 void loop()
@@ -47,30 +55,34 @@ void loop()
   dataString = "";
  while(gpsSerial.available())
   {
-    int data = gpsSerial.read();
+    float data = gpsSerial.read();
     if(gps.encode(data)) 
   {
- lattitude = {gps.location.lat()}; 
-  longitude = {gps.location.lng()}; 
+ lattitude = {gps.location.lat()*1000000}; 
+  longitude = {gps.location.lng()*1000000}; 
 //gpsSerial.end();
 //Serial.begin(9600);
+
   flag = 1;
  // Serial.print("lattitude:");
-  Serial.print(lattitude);
+  Serial.print(lattitude/1000000,6);
   Serial.print(" , ");
-  dataString += String(lattitude);
-    dataString += ","; 
+  lati = String(lattitude/1000000,6);
+  //dataString += String(lattitude/1000000,6);
+    //dataString += ","; 
         
  // Serial.print("longitude:");
-  Serial.print(longitude);
+  Serial.print(longitude/1000000,6);
   Serial.print(" , ");
-  dataString += String(longitude);
-    dataString += ","; 
+  lon = String(longitude/1000000,6);
+  //dataString += String(longitude/1000000,6);
+    //dataString += ","; 
   
 }
   }
   
   if (flag ==1){
+    readRTC();
     readdust();
     readmultino2();
   readMQ135();
@@ -97,12 +109,17 @@ void setupSD()
 }
 void writeSD()
 {
-  File dataFile = SD.open("Test29.csv", FILE_WRITE);
+  File dataFile = SD.open(filename, FILE_WRITE);
   if (dataFile) {
-    dataFile.println(dataString);
+    if(writeflag == 0){
+      dataFile.println("Latitude,Longitude,Time,Date,PM1,PM2_5,PM10,N02,CO2,CO,Humidity,Temperature");
+      writeflag=1;
+    }
+    dataFile.println(lati+","+lon+","+tim+","+dat+","+pm1val+","+pm2_5val+","+pm10_val+","+no2_val+","+co2_val+","+co_val+","+humid_val+","+temper_val);
+    Serial.println(lati+","+lon+","+tim+","+dat+","+pm1val+","+pm2_5val+","+pm10_val+","+no2_val+","+co2_val+","+co_val+","+humid_val+","+temper_val);
     dataFile.close();
     // print to the serial port too:
-    Serial.println(dataString);
+   // Serial.println(dataString);
   }  
   // if the file isn't open, pop up an error:
   else {
@@ -110,6 +127,62 @@ void writeSD()
   }
 }
 
+////////////////////////////////////////////////
+void setupRTC()
+{
+  if (! rtc.begin()) 
+  {
+    //lcd.print("Couldn't find RTC");
+    Serial.println("Couldn't find RTC");
+    while (1);
+  }
+
+  if (! rtc.isrunning()) 
+  {
+    Serial.print("RTC is NOT running!");
+  }
+  
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));//auto update from computer time
+    //rtc.adjust(DateTime(2018, 1, 21, 3, 0, 0));// to set the time manualy 
+}
+
+void readRTC()
+{
+    if(filenum == 0){
+      DateTime now = rtc.now();
+      filename += String(now.day());
+    filename+= String(now.hour());
+    filename+= String(now.minute());
+    filename += ".csv";
+    filenum =1;
+      }
+    String datertc = "";
+    String timertc = "";
+    DateTime now = rtc.now();
+    timertc+= String(now.hour());
+    timertc+=":";
+    timertc+= String(now.minute());
+    timertc+=":";
+    timertc+= String(now.second());
+    
+    //Serial.println(daysOfTheWeek[now.dayOfTheWeek()]);
+    
+    datertc += String(now.day());
+    datertc +="/";
+    datertc += String(now.month());
+    datertc +="/";
+    datertc += String(now.year());
+    Serial.print(timertc);
+    Serial.print(" , ");
+    Serial.print(datertc);
+    Serial.print(" , ");
+    tim = timertc;
+    dat = datertc;
+   /* dataString+=timertc;
+    dataString+=",";
+    dataString+=datertc;
+    dataString+=",";*/
+}
 ////////////////////////////////////////////////
  void setupGPS()
 {
@@ -154,8 +227,9 @@ void readMQ135()
  // Serial.print("");
   Serial.print(sensorValue,DEC);
   Serial.print(" , ");
-  dataString += String(sensorValue);
-    dataString += ",";
+  co2_val = String(sensorValue,DEC);
+  //dataString += String(sensorValue);
+    //dataString += ",";
 //  Serial.println();
 //Serial.end();
 }
@@ -174,8 +248,9 @@ void readmultino2()
     n = gas.measure_NO2();    
     Serial.print(n);
     Serial.print(" , ");
-    dataString += String(n);
-    dataString += ","; 
+    //dataString += String(n);
+    //dataString += ","; 
+    no2_val = String(n);
 //    Serial.println();
 //Serial.end();
 }
@@ -187,8 +262,9 @@ void readmultico()
     c = gas.measure_CO();
     Serial.print(c);
     Serial.print(" , ");
-    dataString += String(c);
-    dataString += ",";
+    //dataString += String(c);
+    //dataString += ",";
+    co_val = String(c);
 }
 //////////////////////////////////////////////////////////////
 
@@ -205,12 +281,13 @@ void readhumi()
     float humidity = TH02.ReadHumidity();
   Serial.print(humidity);
     Serial.print(" , ");
-    dataString += String(humidity);
-    dataString += ",";
+    //dataString += String(humidity);
+    //dataString += ",";
    float temper = TH02.ReadTemperature();   
    Serial.println(temper);
-  dataString += String(temper);
-   
+  //dataString += String(temper);
+   humid_val = String(humidity);
+   temper_val = String(temper);
           
 
 //  Serial.println();
@@ -250,23 +327,27 @@ void readdust()
 //      Serial.print("PM1.0: ");  
       Serial.print(PM01Value);
       Serial.print(" , ");
-      dataString += String(PM01Value);
-    dataString += ","; 
+      //dataString += String(PM01Value);
+    //dataString += ","; 
+    pm1val = String(PM01Value);
 //      Serial.println("  ug/m3");            
     
 //      Serial.print("PM2.5: ");  
       Serial.print(PM2_5Value);
       Serial.print(" , ");
-      dataString += String(PM2_5Value);
-    dataString += ","; 
+      //dataString += String(PM2_5Value);
+    //dataString += ",";
+    pm2_5val= String(PM2_5Value);
+   
 //      Serial.println("  ug/m3");     
       
 //      Serial.print("PM1 0: ");  
       Serial.print(PM10Value);
 //      Serial.println("  ug/m3");   
       Serial.print(" , ");
-      dataString += String(PM10Value);
-    dataString += ","; 
+       pm10_val  = String(PM10Value);
+      //dataString += String(PM10Value);
+    //dataString += ","; 
     }
   //Serial0.end();
   //Serial.end();
