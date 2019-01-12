@@ -10,5 +10,7 @@ while True:
 
    if x is  '':
       continue
-
-   print(x.strip())
+   x = x.strip()
+   print(x)
+   x = x.split(',')
+   print('PM1 = ',x[0],'PM2.5 = ',x[1],'PM10 = ',x[2],'CO2 = ',x[-1])
