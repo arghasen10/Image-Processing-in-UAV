@@ -17,6 +17,7 @@ currenttime_array = currenttime.split(' ')
 date = currenttime_array[0]
 time = currenttime_array[1][:8]
 filename = time
+filename+='_'
 filename+= date 
 filename+='.csv'
 print('Name of File created :',filename)
