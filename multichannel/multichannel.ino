@@ -1,5 +1,8 @@
-#include <MutichannelGasSensor.h>
+
 #include <SoftwareI2C.h>
+
+#include <Wire.h>
+#include <MutichannelGasSensor.h>
 #define LENG 31   //0x42 + 31 bytes equal to 32 bytes
 unsigned char buf[LENG];
 int sensorValue;
@@ -44,5 +47,5 @@ void readmultico()
     float c;
     c = gas.measure_CO();
     Serial.print(c);
-    Serial.print(" , ");
+    Serial.println(" , ");
 }
