@@ -53,7 +53,7 @@ while True:
 
    temp = float(x[7])'''
    PM1,PM2_5,PM10,NO2,CO2,CO,humi,temp=map(float,x)
-   print(date,time,PM1,PM2_5,PM10,NO2,CO2,CO,humi,temp)
+   print('[INFO] Date '+date+'  ,Time '+time+'  ,PM1 '+str(PM1)+'  ,PM2_5 '+str(PM2_5)+'  ,PM10 '+str(NO2)+'  ,CO2 '+str(CO)+'  ,Humidity '+str(humi)+'  ,Temperature '+str(temp))
    with open(filename, 'a') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow([date,time,PM1,PM2_5,PM10,CO2,humi,temp])
