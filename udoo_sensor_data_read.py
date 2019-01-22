@@ -20,7 +20,7 @@ filename = time
 filename+='_'
 filename+= date 
 filename+='.csv'
-print('Name of File created :',filename)
+print('[INFO] Name of File created : '+filename)
 
 with open(filename, 'w+') as csv_file:
     csv_writer = csv.writer(csv_file)
