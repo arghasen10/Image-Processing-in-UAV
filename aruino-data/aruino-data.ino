@@ -26,6 +26,7 @@ void setup()
  setupmulti();
   setupdust();
   setuphumi();
+  pinMode(5,OUTPUT);
 }
 
 void loop()
@@ -35,7 +36,11 @@ void loop()
   readMQ135();
   readmultico();
   readhumi();
-  delay(1000);
+  digitalWrite(5,HIGH);
+  delay(300);
+  digitalWrite(5,LOW);
+  delay(300);
+  
 
 }
 void readMQ135()
