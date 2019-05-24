@@ -52,10 +52,6 @@ class Client():
             data = data.split(',')
             print(data)
             writer.writerow(data)
-            count+=1
-            if count>=100:
-                response = input('Do you want to continue data collection?(Yes/No):')
-                self.s.send(str.encode(response))
         file.close()
 
 
