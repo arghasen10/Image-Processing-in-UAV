@@ -34,6 +34,7 @@ s1 = s1*10000+s2*100+s3
 date = s1
 filename = 'output'+str(time)+'_'+str(date)
 filename+='.csv'
+ds.send_data(conn,filename)
 print('Name of File created :',filename)
 header_name = ["Date","Time","PM1","PM2.5","PM10","NO2","CO2","CO","Humidity","Temperature"]
 with open(filename, 'w+') as csv_file:
@@ -73,6 +74,7 @@ while True:
    temp = float(x[7])
    print(date,time,PM1,PM2_5,PM10,NO2,CO2,CO,humi,temp)
    data_list = [date,time,PM1,PM2_5,PM10,NO2,CO2,CO,humi,temp]
+   ds.send_data(conn,data_list)
    with open(filename, 'a') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(data_list)
