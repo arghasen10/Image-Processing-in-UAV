@@ -74,8 +74,8 @@ while True:
    temp = float(x[7])
    print(date,time,PM1,PM2_5,PM10,NO2,CO2,CO,humi,temp)
    data_list = [date,time,PM1,PM2_5,PM10,NO2,CO2,CO,humi,temp]
-   ds.send_data(conn,data_list)
    with open(filename, 'a') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(data_list)
    data_str=','.join(str(e) for e in data_list)
+   ds.send_data(conn,data_str)
