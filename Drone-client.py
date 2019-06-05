@@ -30,7 +30,7 @@ class Client():
         print('File created:{}'.format(filename))
 
         header = ['Date','Time', 'PM1', 'PM2_5', 'PM10', 'N02', 'CO2', 'CO', 'Humidity', 'Temperature']
-        with open(filename, 'w') as file:
+        with open(filename, 'w+') as file:
             writer = csv.writer(file)
             writer.writerow(header)
 
@@ -52,7 +52,7 @@ class Client():
             data = data.split(',')
             print(data)
             writer.writerow(data)
-        file.close()
+        #file.close()
 
 
 def main():
