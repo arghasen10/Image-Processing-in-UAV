@@ -1,8 +1,8 @@
 
 /************************Hardware Related Macros************************************/
-#define         MG_PIN                       A1     //define which analog input channel you are going to use
+#define         MG_PIN                       A0     //define which analog input channel you are going to use
 #define         BOOL_PIN                     2
-#define         DC_GAIN                      8.14   //define the DC gain of amplifier
+#define         DC_GAIN                      7.5   //define the DC gain of amplifier
  
 /***********************Software Related Macros************************************/
 #define         READ_SAMPLE_INTERVAL         (50)    //define how many samples you are going to take in normal operation
@@ -11,8 +11,8 @@
  
 /**********************Application Related Macros**********************************/
 //These two values differ from sensor to sensor. user should derermine this value.
-#define         ZERO_POINT_VOLTAGE           2.75 //define the output of the sensor in volts when the concentration of CO2 is 400PPM
-#define         REACTION_VOLTGAE             0.85 //define the voltage drop of the sensor when move the sensor from air into 1000ppm CO2
+#define         ZERO_POINT_VOLTAGE          0.76 //define the output of the sensor in volts when the concentration of CO2 is 400PPM
+#define         REACTION_VOLTGAE             0.31 //define the voltage drop of the sensor when move the sensor from air into 1000ppm CO2
  
 /*****************************Globals***********************************************/
 float CO2Curve[3]  =  {2.602,ZERO_POINT_VOLTAGE,(REACTION_VOLTGAE/(2.602-3))};   
@@ -27,7 +27,7 @@ void setup()
     Serial.begin(9600);                              //UART setup, baudrate = 9600bps
     pinMode(BOOL_PIN, INPUT);                        //set pin to input
     digitalWrite(BOOL_PIN, HIGH);                    //turn on pullup resistors
- 
+
   // Serial.print("MG-811 Demostration\n");                
 }
  
@@ -35,10 +35,10 @@ void loop()
 {
     int percentage;
     float volts;
- 
+// Serial.print( analogRead(MG_PIN));
     volts = MGRead(MG_PIN);
 //    Serial.print( "SEN-00007:" );
-    //Serial.print(volts); 
+   // Serial.print(volts); 
 //    Serial.print( "V           " );
  
     percentage = MGGetPercentage(volts,CO2Curve);
@@ -60,7 +60,7 @@ void loop()
  
     Serial.print("\n");
  
-    delay(200);
+   //c delay(200);
 }
  
 /*****************************  MGRead *********************************************
@@ -77,7 +77,7 @@ float MGRead(int mg_pin)
         v += analogRead(mg_pin);
         delay(READ_SAMPLE_INTERVAL);
     }
-    v = (v/READ_SAMPLE_TIMES) *5/1024 ;
+    v = (v/READ_SAMPLE_TIMES) *30/1024 ;     //change the factor for proper range
     return v;  
 }
  
